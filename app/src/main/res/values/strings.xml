@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RxBeacon</string>
+
+    <string name="beacon_uuid">4c35c8f0-fe20-11e5-a837-0800200c9a66</string>
+</resources>
