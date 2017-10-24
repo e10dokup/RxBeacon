@@ -12,6 +12,7 @@ import com.example.e10dokup.rxbeacon.ble.BeaconDetector
 import com.example.e10dokup.rxbeacon.ble.BluetoothAdvertiseHelper
 import com.example.e10dokup.rxbeacon.transformer.IBeaconTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private val advertiser by lazy { BluetoothAdvertiseHelper(this) }
     private val detector by lazy { BeaconDetector(this) }
+
+    private var scanDisposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,12 +51,21 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun startScan() {
-        detector.start()
+        scanDisposable = detector.start()
                 .filter { IBeaconTransformer.check(it) }
                 .map { IBeaconTransformer.transform(it) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { Log.d("MainActivity", String(it.major)) }
+                .subscribe({
+                    Log.d("MainActivity", String(it.major))
+                }, {
+                    Log.d("MainActivity", it.message)
+                })
+    }
+
+    private fun stopScan() {
+        detector.stop()
+        scanDisposable?.dispose()
     }
 
     private val callback = object: AdvertiseCallback() {

@@ -26,11 +26,9 @@ class BeaconDetector(context: Context) {
 
     fun start(): Observable<ScanResult> {
         return Observable.create { subscriber ->
-            if (scanning) return@create
-            scanning = true
             scanCallback = object: ScanCallback() {
                 override fun onScanFailed(errorCode: Int) {
-                    super.onScanFailed(errorCode)
+                    subscriber.onError(Throwable("failed Scan"))
                 }
 
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
@@ -45,8 +43,6 @@ class BeaconDetector(context: Context) {
             }
             scanner.startScan(scanCallback)
         }
-
-
     }
 
     fun stop() {
